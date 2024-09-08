@@ -37,8 +37,12 @@
                                              :family 'ipv4
                                              :host host
                                              :service port
-                                             :sentinel (emp-either sentinel 'emp-listen-sentinel)
-                                             :filter (emp-either filter 'emp-listen-filter))))
+                                             :sentinel (emp-either
+							sentinel
+							'emp-listen-sentinel)
+                                             :filter (emp-either
+						      filter
+						      'emp-listen-filter))))
           (if process
               (setq emp-name name
 		    emp-buffer buffer
