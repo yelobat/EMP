@@ -26,34 +26,38 @@
 (defun emp-connect (name buffer host port sentinel filter)
   "Connect EMP to your server."
   (interactive)
-  (setq emp-name name
-        emp-buffer buffer
-        emp-host host
-        emp-port port
-        emp-sentinel sentinel
-        emp-filter filter
-        emp-process nil)
-  
-  (condition-case err
-      (let ((process (make-network-process :name name
-                                           :buffer buffer
-                                           :family 'ipv4
-                                           :host host
-                                           :service port
-                                           :sentinel sentinel
-                                           :filter filter)))
-        (if process
-            (setq emp-process process)
-          (error "Failed to create network process")))
-    (error
-     (setq emp-name nil
-           emp-buffer nil
-           emp-host nil
-           emp-port nil
-           emp-sentinel nil
-           emp-filter nil
-           emp-process nil)
-     (message "Connection failed: %s" (error-message-string err)))))
+  (if emp-process
+      (message "A connection already exists.")
+    (setq emp-name name
+          emp-buffer buffer
+          emp-host host
+          emp-port port
+          emp-sentinel sentinel
+          emp-filter filter
+          emp-process nil)
+    (condition-case err
+	(let ((process (make-network-process :name name
+                                             :buffer buffer
+                                             :family 'ipv4
+                                             :host host
+                                             :service port
+                                             :sentinel sentinel
+                                             :filter filter)))
+          (if process
+              (setq emp-process process)
+            (error "Failed to create network process")))
+      (error
+       (setq emp-name nil
+             emp-buffer nil
+             emp-host nil
+             emp-port nil
+             emp-sentinel nil
+             emp-filter nil
+             emp-process nil)
+       (message "Connection failed: %s" (error-message-string err)))))
+  )
+
+
 
 (defun emp-define-eot (eot-token)
   "Defines the end of transmission token used by EMP."
