@@ -23,7 +23,10 @@
 (defvar emp-eot (string #o4))
 (defvar emp-delimiter (string #x2c))
 
-(defun emp-connect (name buffer host port sentinel filter)
+(defun emp-either (a b)
+  (if a a b))
+
+(defun emp-connect (name buffer host port &optional sentinel filter)
   "Connect EMP to your server."
   (interactive)
   (if emp-process
@@ -34,8 +37,8 @@
                                              :family 'ipv4
                                              :host host
                                              :service port
-                                             :sentinel sentinel
-                                             :filter filter)))
+                                             :sentinel (emp-either sentinel 'emp-listen-sentinel)
+                                             :filter (emp-either filter 'emp-listen-filter))))
           (if process
               (setq emp-name name
 		    emp-buffer buffer
@@ -98,7 +101,5 @@
 (defun emp-message (message)
   (when emp-process
   (process-send-string emp-process (emp-prepare-message message))))
-  
-
 
 
