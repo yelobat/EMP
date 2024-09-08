@@ -28,13 +28,6 @@
   (interactive)
   (if emp-process
       (message "A connection already exists.")
-    (setq emp-name name
-          emp-buffer buffer
-          emp-host host
-          emp-port port
-          emp-sentinel sentinel
-          emp-filter filter
-          emp-process nil)
     (condition-case err
 	(let ((process (make-network-process :name name
                                              :buffer buffer
@@ -44,7 +37,13 @@
                                              :sentinel sentinel
                                              :filter filter)))
           (if process
-              (setq emp-process process)
+              (setq emp-name name
+		    emp-buffer buffer
+		    emp-host host
+		    emp-port port
+		    emp-sentinel sentinel
+		    emp-filter filter
+		    emp-process process)
             (error "Failed to create network process")))
       (error
        (setq emp-name nil
@@ -56,8 +55,6 @@
              emp-process nil)
        (message "Connection failed: %s" (error-message-string err)))))
   )
-
-
 
 (defun emp-define-eot (eot-token)
   "Defines the end of transmission token used by EMP."
@@ -103,6 +100,5 @@
   (process-send-string emp-process (emp-prepare-message message))))
   
 
-(emp-message "Message")
-(emp-connect "Server" "*Server Buffer*" "127.0.0.1" 8859
-	     'emp-listen-sentinel 'emp-listen-filter)
+
+
