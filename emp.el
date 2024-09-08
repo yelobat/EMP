@@ -21,6 +21,7 @@
 (defvar emp-filter nil)
 (defvar emp-process nil)
 (defvar emp-eot (string #o4))
+(defvar emp-delimiter (string #x2c))
 
 (defun emp-connect (name buffer host port sentinel filter)
   "Connect EMP to your server."
@@ -57,33 +58,47 @@
 (defun emp-define-eot (eot-token)
   "Defines the end of transmission token used by EMP."
   (interactive)
-  (defvar emp-eot eot-token))
+  (setq emp-eot eot-token))
+
+(defun emp-define-delimiter (delimiter-token)
+  "Defines the delimiter token used by EMP."
+  (interactive)
+  (setq emp-delimiter delimiter-token))
 
 (defun emp-listen-sentinel (proc string)
   "Determines if server has terminated."
-  (when (string= string "connection broken by remote peer.\n")
-    (progn
-      (with-current-buffer emp-buffer (erase-buffer))
-      (defvar emp-name nil)
-      (defvar emp-buffer nil)
-      (defvar emp-host nil)
-      (defvar emp-port nil)
-      (defvar emp-sentinel nil)
-      (defvar emp-filter nil)
-      (defvar emp-process nil)
-      (message (format "client %s has quit" proc)))))
+  (when (string-match "connection broken by remote peer" string)
+    (with-current-buffer emp-buffer (erase-buffer))
+    (setq emp-name nil
+          emp-buffer nil
+          emp-host nil
+          emp-port nil
+          emp-sentinel nil
+          emp-filter nil
+          emp-process nil)
+    (message (format "client %s has quit" proc))))
 
 (defun emp-listen-filter (proc string)
   "Processes messages on retrieval."
   (with-current-buffer emp-buffer
     (goto-char (point-min))
+    (insert emp-delimiter)
     (insert string)))
 
-(defun emp-message (message)
-  (process-send-string emp-process message)
+(defun emp-clear-buffer ()
+  (when emp-buffer
+    (with-current-buffer emp-buffer (erase-buffer))
+    ))
+
+(defun emp-prepare-message (message)
+  (concat message emp-eot)
   )
+
+(defun emp-message (message)
+  (when emp-process
+  (process-send-string emp-process (emp-prepare-message message))))
+  
 
 (emp-message "Message")
 (emp-connect "Server" "*Server Buffer*" "127.0.0.1" 8859
 	     'emp-listen-sentinel 'emp-listen-filter)
-
